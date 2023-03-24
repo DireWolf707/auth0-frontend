@@ -1,52 +1,31 @@
 import React from "react"
-import { Routes, Route, Navigate, Outlet } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import { Stack } from "@mui/material"
 import Navbar from "./components/Navbar"
 import AuthLoader from "./components/loaders/AuthLoader"
-import { Profile, Home, Error404 } from "./pages"
-
-const LoggedInRoute = ({ user, redirectPath }) => {
-  if (!user) return <Navigate to={redirectPath} replace />
-  return <Outlet />
-}
-
-const NonLoggedInRoute = ({ user, redirectPath }) => {
-  if (user) return <Navigate to={redirectPath} replace />
-  return <Outlet />
-}
+import { Profile, Home, Callback, Error404, Error503 } from "./pages"
+import { useAuth0 } from "@auth0/auth0-react"
+import { AuthenticationGuard } from "./components/auth0/AuthenticationGuard"
 
 const App = () => {
-  // if (isFetching || isError)
-  //   return (
-  //     <Stack sx={{ height: "100vh", width: "100vw", bgcolor: "#000" }}>
-  //       <AuthLoader />
-  //     </Stack>
-  //   )
+  const { isLoading } = useAuth0()
 
-  const data = {}
+  if (isLoading)
+    return (
+      <Stack sx={{ height: "100vh", width: "100vw", bgcolor: "#000" }}>
+        <AuthLoader />
+      </Stack>
+    )
+
   return (
     <Stack sx={{ height: "100vh", width: "100vw", bgcolor: "#000" }}>
-      <Navbar user={data?.user} />
+      <Navbar />
 
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/callback" element={<AuthLoader />} />
-
-        {/* LoggedIn Routes */}
-        <Route element={<LoggedInRoute user={data?.user} redirectPath="/login" />}>
-          <Route path="/profile/*" element={<Profile />} />
-        </Route>
-
-        {/* Non-LoggedIn Routes */}
-        {/* <Route element={<NonLoggedInRoute user={data?.user} redirectPath="/profile" />}>
-          <Route path="/login" element={<Login />} />
-        </Route> */}
-
-        {/* Unknown Routes (404) */}
+        <Route path="/profile/*" element={<AuthenticationGuard component={Profile} />} />
+        <Route path="/callback" element={<Callback />} />
         <Route path="*" element={<Error404 />} />
-
-        {/* End */}
       </Routes>
     </Stack>
   )
