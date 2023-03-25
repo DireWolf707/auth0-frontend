@@ -6,13 +6,16 @@ import { useBackendErrorHandler } from "../../hooks/useBackendErrorHandler"
 import { useSnackbar } from "notistack"
 import { toastOptions } from "../../utils/toastOptions"
 import { useAuth0 } from "@auth0/auth0-react"
-import { useUpdateProfileMutation } from "../../../store"
+import { useUpdateProfileMutation, useDeleteAvatarMutation, useUpdateAvatarMutation } from "../../../store"
 
 const DetailsChange = () => {
   const { enqueueSnackbar: toast } = useSnackbar()
   const { user, getAccessTokenSilently } = useAuth0()
   const [updateProfile, { isLoading }] = useUpdateProfileMutation()
+  const [updateAvatar, { isLoading: isAvatarUpdating }] = useUpdateAvatarMutation()
+  const [deleteAvatar, { isLoading: isAvatarDeleting }] = useDeleteAvatarMutation()
 
+  const fileRef = useRef(null)
   const nameRef = useRef(null)
   const [formErrors, setFormErrors] = useState({})
   const { errorHandler } = useBackendErrorHandler(setFormErrors)
@@ -32,6 +35,26 @@ const DetailsChange = () => {
       .catch(errorHandler)
   }
 
+  const handleUpdateAvatar = async (e) => {
+    const file = e.target.files[0]
+    const avatarData = new FormData()
+    avatarData.append("file", file)
+    const accessToken = await getAccessTokenSilently()
+
+    updateAvatar({ accessToken, avatarData })
+      .unwrap()
+      .then((resp) => toast(resp.data, toastOptions("success")) && getAccessTokenSilently({ cacheMode: "off" }))
+      .catch(errorHandler)
+  }
+
+  const handleDeleteAvatar = async () => {
+    const accessToken = await getAccessTokenSilently()
+    deleteAvatar({ accessToken })
+      .unwrap()
+      .then((resp) => toast(resp.data, toastOptions("success")) && getAccessTokenSilently({ cacheMode: "off" }))
+      .catch(errorHandler)
+  }
+
   return (
     <Stack
       component="form"
@@ -41,8 +64,8 @@ const DetailsChange = () => {
       sx={{ borderRadius: "4px", m: "auto", p: "24px", bgcolor: "white", width: "320px" }}
     >
       <Stack flexDirection="row" alignItems="end" sx={{ mt: "-106px", mb: "12px" }}>
-        <IconButton sx={{ mb: "34px" }}>
-          <AddAPhotoIcon fontSize="large" sx={{ fill: "red", p: "2px" }} />
+        <IconButton onClick={handleDeleteAvatar} disabled={isAvatarDeleting} sx={{ mb: "34px", visibility: !user.picture && "hidden" }}>
+          <DeleteIcon fontSize="large" sx={{ fill: "red", p: "2px" }} />
         </IconButton>
 
         <Box
@@ -51,11 +74,10 @@ const DetailsChange = () => {
           sx={{ height: "185px", width: "180px", borderRadius: "100%", objectFit: "cover" }}
         />
 
-        {user.picture && (
-          <IconButton sx={{ mb: "34px" }}>
-            <DeleteIcon fontSize="large" sx={{ fill: "red", p: "2px" }} />
-          </IconButton>
-        )}
+        <IconButton onClick={() => fileRef.current.click()} sx={{ mb: "34px" }}>
+          <input ref={fileRef} onChange={handleUpdateAvatar} disabled={isAvatarUpdating} type="file" hidden />
+          <AddAPhotoIcon fontSize="large" sx={{ fill: "red", p: "2px" }} />
+        </IconButton>
       </Stack>
 
       <TextField
@@ -100,7 +122,7 @@ const DetailsChange = () => {
         )
       )}
 
-      <Button type="submit" variant="contained" color="error" fullWidth disabled={isLoading}>
+      <Button type="submit" variant="contained" color="error" fullWidth disabled={isLoading || isAvatarUpdating || isAvatarDeleting}>
         Update Details
       </Button>
     </Stack>

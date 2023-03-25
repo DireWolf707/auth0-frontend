@@ -1,6 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { setupListeners } from "@reduxjs/toolkit/query"
-import { userApi, useUpdatePasswordMutation, useUpdateProfileMutation } from "./apis/userApi"
+import {
+  userApi,
+  useUpdatePasswordMutation,
+  useUpdateProfileMutation,
+  useDeleteAvatarMutation,
+  useUpdateAvatarMutation,
+} from "./apis/userApi"
 
 export const store = configureStore({
   reducer: {
@@ -11,4 +17,4 @@ export const store = configureStore({
 
 setupListeners(store.dispatch)
 
-export { useUpdatePasswordMutation, useUpdateProfileMutation }
+export { useUpdatePasswordMutation, useUpdateProfileMutation, useDeleteAvatarMutation, useUpdateAvatarMutation }

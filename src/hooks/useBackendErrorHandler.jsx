@@ -32,6 +32,10 @@ export const useBackendErrorHandler = (setFormErrors) => {
           handleError400(err.data, toast, setFormErrors)
           break
 
+        case "FETCH_ERROR":
+          toast("server is unreachable at the moment!", toastOptions)
+          break
+
         default:
           console.log(err)
           break

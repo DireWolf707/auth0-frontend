@@ -26,8 +26,25 @@ export const userApi = createApi({
           headers: { authorization: `Bearer ${accessToken}` },
         }),
       }),
+
+      updateAvatar: builder.mutation({
+        query: ({ accessToken, avatarData }) => ({
+          url: `/avatar`,
+          method: "POST",
+          body: avatarData,
+          headers: { authorization: `Bearer ${accessToken}` },
+        }),
+      }),
+
+      deleteAvatar: builder.mutation({
+        query: ({ accessToken }) => ({
+          url: `/avatar`,
+          method: "DELETE",
+          headers: { authorization: `Bearer ${accessToken}` },
+        }),
+      }),
     }
   },
 })
 
-export const { useUpdatePasswordMutation, useUpdateProfileMutation } = userApi
+export const { useUpdatePasswordMutation, useUpdateProfileMutation, useDeleteAvatarMutation, useUpdateAvatarMutation } = userApi
