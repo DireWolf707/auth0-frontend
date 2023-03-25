@@ -2,23 +2,34 @@ import React, { useRef, useState } from "react"
 import { Stack, Box, TextField, Button, IconButton } from "@mui/material"
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto"
 import DeleteIcon from "@mui/icons-material/Delete"
-// import { useBackendErrorHandler } from "../../hooks/useBackendErrorHandler"
-// import { useSnackbar } from "notistack"
-// import { toastOptions } from "../../utils/toastOptions"
+import { useBackendErrorHandler } from "../../hooks/useBackendErrorHandler"
+import { useSnackbar } from "notistack"
+import { toastOptions } from "../../utils/toastOptions"
 import { useAuth0 } from "@auth0/auth0-react"
+import { useUpdateProfileMutation } from "../../../store"
 
 const DetailsChange = () => {
-  // const { enqueueSnackbar: toast } = useSnackbar()
+  const { enqueueSnackbar: toast } = useSnackbar()
   const { user, getAccessTokenSilently } = useAuth0()
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation()
 
   const nameRef = useRef(null)
   const [formErrors, setFormErrors] = useState({})
-  // const { errorHandler } = useBackendErrorHandler(setFormErrors)
+  const { errorHandler } = useBackendErrorHandler(setFormErrors)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const name = nameRef.current.value
-    console.log(name)
+
+    const accessToken = await getAccessTokenSilently()
+    updateProfile({ accessToken, name })
+      .unwrap()
+      .then((resp) => {
+        setFormErrors({})
+        toast(resp.data, toastOptions("success"))
+        getAccessTokenSilently({ cacheMode: "off" })
+      })
+      .catch(errorHandler)
   }
 
   return (
@@ -89,13 +100,7 @@ const DetailsChange = () => {
         )
       )}
 
-      <Button
-        type="submit"
-        variant="contained"
-        color="error"
-        fullWidth
-        // disabled={isLoading}
-      >
+      <Button type="submit" variant="contained" color="error" fullWidth disabled={isLoading}>
         Update Details
       </Button>
     </Stack>

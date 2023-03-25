@@ -5,14 +5,16 @@ import { createTheme, ThemeProvider } from "@mui/material"
 import { SnackbarProvider } from "notistack"
 import { BrowserRouter as Router } from "react-router-dom"
 import { Auth0ProviderWithNavigate } from "./components/auth0/Auth0ProviderWithNavigate"
+import { store } from "../store"
+import { Provider as StoreProvider } from "react-redux"
 import "./index.css"
 
 const theme = createTheme({})
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  <StoreProvider store={store}>
     <ThemeProvider theme={theme}>
-      <SnackbarProvider autoHideDuration={2500} dense={false} maxSnack={3} hideIconVariant={false}>
+      <SnackbarProvider autoHideDuration={3000} dense={false} maxSnack={3} hideIconVariant={false}>
         <Router>
           <Auth0ProviderWithNavigate>
             <App />
@@ -20,5 +22,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </Router>
       </SnackbarProvider>
     </ThemeProvider>
-  </React.StrictMode>
+  </StoreProvider>
 )

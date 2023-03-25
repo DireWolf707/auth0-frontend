@@ -13,6 +13,7 @@ export const Auth0ProviderWithNavigate = ({ children }) => {
       authorizationParams={{
         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
         redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
+        scope: "profile email", // default
       }}
       onRedirectCallback={onRedirectCallback}
     >

@@ -1,26 +1,36 @@
 import React, { useRef, useState } from "react"
 import { Stack, TextField, Button, Typography } from "@mui/material"
-// import { useBackendErrorHandler } from "../../hooks/useBackendErrorHandler"
-// import { useSnackbar } from "notistack"
-// import { toastOptions } from "../../utils/toastOptions"
+import { useBackendErrorHandler } from "../../hooks/useBackendErrorHandler"
+import { useSnackbar } from "notistack"
+import { toastOptions } from "../../utils/toastOptions"
 import { useAuth0 } from "@auth0/auth0-react"
+import { useUpdatePasswordMutation } from "../../../store"
 
 const PasswordChange = () => {
-  // const { enqueueSnackbar: toast } = useSnackbar()
+  const { enqueueSnackbar: toast } = useSnackbar()
   const { getAccessTokenSilently } = useAuth0()
+  const [updatePassword, { isLoading }] = useUpdatePasswordMutation()
 
   const passwordRef = useRef(null)
   const passwordConfirmRef = useRef(null)
   const [formErrors, setFormErrors] = useState({})
-  // const { errorHandler } = useBackendErrorHandler(setFormErrors)
+  const { errorHandler } = useBackendErrorHandler()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const password = passwordRef.current.value
     const passwordConfirm = passwordConfirmRef.current.value
     if (password !== passwordConfirm) return setFormErrors({ passwordConfirm: "Password don't match." })
     else setFormErrors({})
-    console.log(password)
+
+    const accessToken = await getAccessTokenSilently()
+    updatePassword({ accessToken, password })
+      .unwrap()
+      .then((resp) => {
+        toast(resp.data, toastOptions("success"))
+        getAccessTokenSilently({ cacheMode: "off" })
+      })
+      .catch(errorHandler)
   }
 
   return (
@@ -52,12 +62,7 @@ const PasswordChange = () => {
         />
       ))}
 
-      <Button
-        type="submit"
-        variant="contained"
-        color="error"
-        // disabled={isLoading}
-      >
+      <Button type="submit" variant="contained" color="error" disabled={isLoading}>
         Submit
       </Button>
     </Stack>
